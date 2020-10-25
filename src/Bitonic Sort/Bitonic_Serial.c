@@ -1,17 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>
 
 bool isBitonic(int *arr , int size , int index);
 void swap(int* arr , int i , int j);
 void printArr(int *arr , int size);
 int changes(int * arr , int size);
 void arrUpdate(int *arr , int size , int index);
+void bitonicSort(int *arr , int size);
 
 int main(int argc, char const *argv[])
 {
-    int arr[9] = {1 , 2 ,  4 ,5,9,8,7,6};
+    //int arr[8] = {1 , 2 ,  4 , 5 , 9 , 8 , 7 , 6};
    // int arr[] = {8 , 9 , 2 , 1 , 0 , 4 ,9};
+    int arr[] = {3,5,8,9,10,12,14,20,95,90,60,40,35,23,18,0};
     int size = sizeof(arr)/ sizeof(int);
 
     printArr(arr, size);
@@ -25,12 +28,38 @@ int main(int argc, char const *argv[])
     printArr(arr , size);
     printf("\n");
 
+    index = changes(arr , size);
+    printf("\n");
+    printf("%d",index);
+    printf("\n");
+
+    arrUpdate(arr , size , index);
+    printf("\n");
+    printArr(arr , size);
+    printf("\n");
+
     bool isbit = isBitonic(arr , size , 0);
-    printf("\n");
-    printf("%d",isbit);
-    printf("\n");
+    if (isbit)
+    {
+        bitonicSort(arr , size);
+    }
+    printArr(arr, size);
     return 0;
 }
+
+void bitonicSort(int *arr, int size) 
+{ 
+    int i, k = size; 
+
+    while (k > 0) { 
+        for (i = 0; i + k < size; i++) 
+            if (arr[i] > arr[i + k]) 
+                swap(arr,i, i + k); 
+  
+        k = k / 2; 
+    } 
+   
+} 
 
 int changes(int *arr , int size){
     int count = 0;
@@ -40,14 +69,14 @@ int changes(int *arr , int size){
         isIncreasing = true;
     }
 
-        int i;
+    int i;
     for (i = 0; i < size-1; i++)
     {
       if (isIncreasing)
       {
         if(arr[i+1] < arr[i]){
             isIncreasing = false;
-            index = i+1;
+            index = i;
             count++;
         }
       }
@@ -55,7 +84,7 @@ int changes(int *arr , int size){
       {
         if(arr[i+1] > arr[i]){
             isIncreasing = true;
-            index = i+1;
+            index = i;
             count ++;
         }
       }     
