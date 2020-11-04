@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define row 6
-#define col 6
+// #define SIZE 6
+// #define SIZE 6
+#define SIZE 75
 
-int p[row][col];
+int p[SIZE][SIZE];
 
 void setGrid();
 void printGrid();
@@ -16,30 +17,29 @@ int main(int argc, char const *argv[])
 {
     setGrid();
     printGrid();
-    // updateGrid();
-    // printGrid();
 
     
-    while (1>0)
-    {
-        updateGrid();
+        for(int i = 0 ; i < 1; i++){
+            updateGrid();
+        }
+        
         printf("\n\n");
         int j = 100000000;
         while (j > 0)
         {
             j--;
         }
-        system("clear");
+        //system("clear");
         printGrid();
-    }
+    
     
     
     return 0;
 }
 
 void setGrid(){
-    for(int i = 0 ; i < row ; i++){
-        for(int j = 0 ; j < col ; j++){
+    for(int i = 0 ; i < SIZE ; i++){
+        for(int j = 0 ; j < SIZE ; j++){
             int x = rand()%2;
             p[i][j] = x;
         }
@@ -47,8 +47,8 @@ void setGrid(){
 }
 
 void printGrid(){
-     for(int i = 0 ; i < row ; i++){
-        for(int j = 0 ; j < col ; j++){
+     for(int i = 0 ; i < SIZE ; i++){
+        for(int j = 0 ; j < SIZE ; j++){
 
             if(p[i][j] == 1)
             printf("* ");
@@ -63,10 +63,10 @@ void printGrid(){
 }
 
 void updateGrid(){
-    int nextGen[row][col];
+    int nextGen[SIZE][SIZE];
 
-    for(int i = 0 ; i < row ; i++){
-        for(int j = 0 ; j < col ; j++){
+    for(int i = 0 ; i < SIZE ; i++){
+        for(int j = 0 ; j < SIZE ; j++){
             int state = p[i][j];
             int neighbors = countNeighbors(j , i);
            // printf("state {%d, %d} has %d neighbours \n", i , j , neighbors);
@@ -85,8 +85,8 @@ void updateGrid(){
         
     }
 
-      for(int i = 0; i < row ; i++){
-            for(int j = 0 ; j < col ; j++){
+      for(int i = 0; i < SIZE ; i++){
+            for(int j = 0 ; j < SIZE ; j++){
 
                     p[i][j] = nextGen[i][j];
             
@@ -98,12 +98,12 @@ int countNeighbors( int x , int y){
     int sum = 0;
      for(int i = -1 ; i < 2 ; i++){
         //  if(y == 0 && i == -1) continue;
-        //  if(y == row -1 && i == 1) continue;
+        //  if(y == SIZE -1 && i == 1) continue;
         for(int j = -1 ; j < 2 ; j++){
             // if(x == 0 && j == -1) continue;
-            // if(x == col -1 && j == 1) continue;
-            int r = (row + y+i)%row;
-            int c = (col + x+j)%col;
+            // if(x == SIZE -1 && j == 1) continue;
+            int r = (SIZE + y+i)%SIZE;
+            int c = (SIZE + x+j)%SIZE;
             if(p[r][c] == 1){
                 sum = sum + 1;
             }
