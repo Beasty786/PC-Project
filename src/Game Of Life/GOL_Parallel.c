@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SIZE 75
+#define SIZE 100
 #define MASTER 0
 int grid[SIZE][SIZE];
 int followingGen[SIZE][SIZE];
@@ -25,7 +25,7 @@ int main(int argc, char * argv[]) {
     setGrid(grid, followingGen);
 
     int numtasks, rank, source, dest, chunksize, offset, tag1, tag2;
-    int top[SIZE], bottom[SIZE] , t[SIZE] , b[SIZE];
+    int top[SIZE], bottom[SIZE] ;
     
 
     MPI_Status status1 ,status2;
@@ -49,6 +49,11 @@ int main(int argc, char * argv[]) {
             };     
     }
   
+    
+    
+    
+        double start = MPI_Wtime();
+    
   
     for(int i = 0 ; i < numtasks ; i++){
           MPI_Barrier(MPI_COMM_WORLD);
@@ -65,20 +70,24 @@ int main(int argc, char * argv[]) {
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);
-    MPI_Recv(&b , SIZE , MPI_INT , (rank+1)%numtasks ,tag1, MPI_COMM_WORLD,&status1);
-    MPI_Recv(&t, SIZE , MPI_INT , (numtasks+(rank -1))%numtasks , tag2 , MPI_COMM_WORLD , &status2);
+    MPI_Recv(&bottom , SIZE , MPI_INT , (rank+1)%numtasks ,tag1, MPI_COMM_WORLD,&status1);
+    MPI_Recv(&top, SIZE , MPI_INT , (numtasks+(rank -1))%numtasks , tag2 , MPI_COMM_WORLD , &status2);
 
-    MPIcopyArr(t , b , offset , chunksize);
+    MPIcopyArr(top , bottom , offset , chunksize);
     MPIupdatefollowingGen(chunksize,offset,followingGen);
     MPIupdateGrid(chunksize , offset , followingGen);
-
+    double end = MPI_Wtime();
      for(int i = 0 ; i < numtasks ; i++){
         MPI_Barrier(MPI_COMM_WORLD);
         if(rank == i){
             printMypart(grid , offset , chunksize);
         }
     }
-    
+    MPI_Barrier(MPI_COMM_WORLD);
+    if(rank == MASTER){
+        
+        printf("Time take is %f\n\n" , end - start);
+    }
 
     MPI_Finalize();
 
@@ -122,8 +131,10 @@ void printGrid(int g[SIZE][SIZE]) {
 
             if (g[i][j] == 1)
                 printf("* ");
+                //printf("1 ");
             else {
                 printf("  ");
+               // printf("0 ");
             }
 
         }

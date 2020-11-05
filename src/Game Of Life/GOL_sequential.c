@@ -1,10 +1,12 @@
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+
 // #define SIZE 6
 // #define SIZE 6
-#define SIZE 75
+#define SIZE 100
 
 int p[SIZE][SIZE];
 
@@ -16,22 +18,26 @@ int countNeighbors( int x , int y);
 int main(int argc, char const *argv[])
 {
     setGrid();
-    printGrid();
+    //printGrid();
 
     
-        for(int i = 0 ; i < 1; i++){
-            updateGrid();
-        }
+        // for(int i = 0 ; i < 1; i++){
+        //     updateGrid();
+        // }
         
-        printf("\n\n");
-        int j = 100000000;
-        while (j > 0)
-        {
-            j--;
-        }
+       // printf("\n\n");
+       // int j = 100000000;
+        // while (j > 0)
+        // {
+        //     j--;
+        // }
         //system("clear");
+    clock_t t;
+    t = clock();
+        updateGrid();
         printGrid();
-    
+    t= clock() - t;
+    printf("time taken is %f\n\n " , ((double)t)/CLOCKS_PER_SEC);
     
     
     return 0;
