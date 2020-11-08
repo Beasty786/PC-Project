@@ -1,8 +1,14 @@
+#include "mpi.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <time.h>
-#include <omp.h>
+
+/*
+ * MPI applications: mpicc hello_world.c -o test
+ * to run: 
+ *  mpiexec -n 16 ./test
+ *  mpirun -np 16 ./test
+*/
 
 bool isBitonic(int *arr , int size , int index);
 void swap(int* arr , int i , int j);
@@ -13,47 +19,81 @@ int min(int a , int b);
 void indices(int *array ,int mid , int length , int inv);
 void reset(int *arr , int size);
 void init(int * arr0 , int *arr , int size);
+int numLevels(int mid);
 
-int main(int argc, char const *argv[])
+int main(int argc, char *argv[])
 {
     
-    int size ;
-    scanf("%d", &size);
-    int arr0[size/2];   // indices to perform magic sort
-    int arr[size];      // Bitonic sequence array
-    int mid = size/2;   // where to split
-    int inv = mid*2;    // inverse magic number
+    int size = 8;
+    //scanf("%d", &size);
+    int arr0[] = {0 , 1 , 2 , 3 };                      // indices to perform magic sort
+    int arr[] = {4, 6, 8, 10, 9, 7, 5, 3};        // Bitonic sequence array
+    
+    int mid = size/2;                                   // where to split
+    int inv = mid*2;                                    // inverse magic number
     int indexLength = size / 2;
-    init(arr0 , arr , size);
-    clock_t t;
-    t = clock();
-    while(mid > 0){ 
-        #pragma omp parallel num_threads(8)
-        {
-            #pragma omp for
-            for(int i = 0; i < size/2 ; i++){
+    //init(arr0 , arr , size);
+    int levels = numLevels(size);
+    
+    int numtasks , rank , tag1 = 1 , tag2 = 2;
+    MPI_Status stat, stat2;
+
+    MPI_Init(&argc , &argv);
+    MPI_Comm_size(MPI_COMM_WORLD , &numtasks);
+    MPI_Comm_rank(MPI_COMM_WORLD , &rank);
+
+    int indicesPerProcessor = indexLength / numtasks ;
+    for(int k = 0 ; k < levels ; k++){
+        
+        MPI_Barrier(MPI_COMM_WORLD);
+
+       MPI_Barrier(MPI_COMM_WORLD);
+        for(int i = rank*indicesPerProcessor; i < rank*indicesPerProcessor + indicesPerProcessor ; i++){
                 int ind = arr0[i];
-                if(arr[ind+mid] <= arr[ind]){
-                    swap(arr , ind + mid , ind);
+                if(arr[arr0[i]+mid] < arr[arr0[i]]){
+                    swap(arr , arr0[i] + mid , arr0[i]);
+                }
+        }
+
+        if(rank != 0){
+            MPI_Send(&arr , size ,MPI_INT , 0 , tag1 , MPI_COMM_WORLD);    
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
+        if(rank == 0){
+            int temparr[size];
+            for(int j = 1 ; j < numtasks ; j++){
+                
+                MPI_Recv(&temparr , size, MPI_INT , j ,tag1 , MPI_COMM_WORLD, &stat);
+                for(int i = j*indicesPerProcessor; i < j*indicesPerProcessor + indicesPerProcessor ; i++){
+                    arr[arr0[i]] = temparr[arr0[i]];
+                    arr[arr0[i]+mid] = temparr[arr0[i] + mid];
                 }
             }   
-            
-            if(omp_get_thread_num() == 0){  
-                mid = mid/2;
-                inv = mid *2;
-               // printArr(arr , size);
-                if(mid > 0){
-                    indices(arr0 , mid , indexLength , inv);
-                } 
-            }
-            
-        }    
-    }
-    t = clock()-t;
-    printArr(arr,size);
-    printf("time taken is %f\n\n " , ((double)t)/CLOCKS_PER_SEC);
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
+        mid = mid/2;
+        inv = mid*2;
+        if(mid > 0){
+            indices(arr0 , mid , indexLength , inv);
+        } 
 
-    return 0;
+        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Bcast(&arr,size,MPI_INT,0,MPI_COMM_WORLD);
+
+    }
+ 
+    MPI_Finalize();
+
+    printArr(arr,size);
+    //printf("time taken is %f\n\n " , ((double)t)/CLOCKS_PER_SEC);
+}
+int numLevels(int mid){
+    int m = mid;
+    int count = 0;
+   for(int i = mid ; mid > 1 ; mid/=2){
+       count ++;
+   }
+    return count; 
 }
 
 void init(int * arr0 , int *arr , int size){

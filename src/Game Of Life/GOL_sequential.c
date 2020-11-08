@@ -18,20 +18,7 @@ int countNeighbors( int x , int y);
 int main(int argc, char const *argv[])
 {
     setGrid();
-    //printGrid();
-
-    
-        // for(int i = 0 ; i < 1; i++){
-        //     updateGrid();
-        // }
-        
-       // printf("\n\n");
-       // int j = 100000000;
-        // while (j > 0)
-        // {
-        //     j--;
-        // }
-        //system("clear");
+ 
     clock_t t;
     t = clock();
         updateGrid();
