@@ -73,12 +73,13 @@ int main(int argc, char *argv[])
         MPI_Barrier(MPI_COMM_WORLD);
         mid = mid/2;
         inv = mid*2;
-        if(mid > 0){
+        if(mid > 0 && rank == 0){
             indices(arr0 , mid , indexLength , inv);
         } 
 
         MPI_Barrier(MPI_COMM_WORLD);
         MPI_Bcast(&arr,size,MPI_INT,0,MPI_COMM_WORLD);
+        MPI_Bcast(&arr0 , size/2 , MPI_INT , 0, MPI_COMM_WORLD);
 
     }
  
