@@ -4,9 +4,7 @@
 #include <string.h>
 
 
-// #define SIZE 6
-// #define SIZE 6
-#define SIZE 100
+#define SIZE 55
 
 int p[SIZE][SIZE];
 
@@ -18,10 +16,11 @@ int countNeighbors( int x , int y);
 int main(int argc, char const *argv[])
 {
     setGrid();
- 
+    int generations;
+    scanf("%d",&generations);
     clock_t t;
     t = clock();
-        for(int i = 0 ; i < 2 ; i++){
+        for(int i = 0 ; i < generations ; i++){
         updateGrid();
         }
         printGrid();

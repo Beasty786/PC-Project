@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SIZE 100
+#define SIZE 55
 #define MASTER 0
 int grid[SIZE][SIZE];
 int followingGen[SIZE][SIZE];
@@ -38,18 +38,22 @@ int main(int argc, char * argv[]) {
     source = MASTER;
     chunksize = (SIZE) / numtasks;
     offset = (SIZE) % numtasks;
+    int generations;
     if(rank == MASTER){
         chunksize = (SIZE % numtasks) + chunksize;
         offset = 0;
+        printf("please enter the number of generations\n");
+        scanf("%d", &generations);
     }
+    MPI_Bcast(&generations , 1 , MPI_INT , 0 , MPI_COMM_WORLD);
     for (int i = 0; i < numtasks - 1; i++) {
             if(rank== i + 1){
                 offset += chunksize*rank; 
             };     
     }
     
-    double start = MPI_Wtime();
-    for(int tj = 0 ; tj < 2 ; tj++){
+    double start = MPI_Wtime(); //------------------------------------------------------------------
+    for(int tj = 0 ; tj < generations ; tj++){
     for(int i = 0 ; i < numtasks ; i++){
           MPI_Barrier(MPI_COMM_WORLD);
         if(rank == i){
@@ -72,7 +76,9 @@ int main(int argc, char * argv[]) {
     MPIupdatefollowingGen(chunksize,offset,followingGen);
     MPIupdateGrid(chunksize , offset , followingGen);
     }
-    double end = MPI_Wtime();
+    double end = MPI_Wtime(); //-------------------------------------------------------------------
+
+
      for(int i = 0 ; i < numtasks ; i++){
         MPI_Barrier(MPI_COMM_WORLD);
         if(rank == i){

@@ -1,11 +1,8 @@
 #include <stdio.h>
-
 #include <stdlib.h>
-
 #include <string.h>
 
-
-#define SIZE 55
+#define SIZE 50
 
 int p[SIZE][SIZE];
 
@@ -18,12 +15,14 @@ int main(int argc, char
     const * argv[]) {
     setGrid();
     //printGrid();
+    int generations; 
+    printf("Enter the number of generations\n");
+    scanf("%d",&generations);
 
-
-    for (int i = 0; i < 500; i++) {
+    for (int i = 0; i < generations; i++) {
         updateGrid();
         // printf("\n\n");
-        int j = 100000000;
+        int j = 90000000;
         while (j > 0) {
             j--;
         }

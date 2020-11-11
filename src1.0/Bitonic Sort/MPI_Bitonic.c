@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <time.h>
 
 /*
  * MPI applications: mpicc hello_world.c -o test
@@ -25,30 +26,48 @@ bool isSorted(int *arr, int size);
 int main(int argc, char *argv[])
 {
     
-    int size = 8;
+    int size;
     //scanf("%d", &size);
-    int arr0[] = {0 , 1 , 2 , 3 };                      // indices to perform magic sort
-    int arr[] = {4, 6, 8, 10, 9, 7, 5, 3};        // Bitonic sequence array
+    // Bitonic sequence array
     
-    int mid = size/2;                                   // where to split
-    int inv = mid*2;                                    // inverse magic number
-    int indexLength = size / 2;
-    //init(arr0 , arr , size);
+    int mid;                                 // where to split
+    int inv;                                   // inverse magic number
+    int indexLength;
     int levels = numLevels(size);
     
     int numtasks , rank , tag1 = 1 , tag2 = 2;
+    clock_t t;
     MPI_Status stat, stat2;
-
+    
     MPI_Init(&argc , &argv);
     MPI_Comm_size(MPI_COMM_WORLD , &numtasks);
     MPI_Comm_rank(MPI_COMM_WORLD , &rank);
 
-    int indicesPerProcessor = indexLength / numtasks ;
-    double start = MPI_Wtime();
-    for(int k = 0 ; k < levels ; k++){
-        
-        MPI_Barrier(MPI_COMM_WORLD);
+    if(rank == 0){
+        printf("\nHOPEFULLY YOU DID SPECIFY THE NUMBER OF PROCESSORS USING THE COMMAD BELOW \n*** mpirun -np 16 ...*** ");
+        printf("\nPLEASE ENTER THE SIZE OF THE ARRAY AND PRESS ENTER \nTHEN ENTER THE VALUES OF THE ARRAY YOU WISH TO SORT IN A BITONIC SEQUENCE\n\n");
+        scanf("%d", &size);
+    }
+    MPI_Bcast(&size , 1 , MPI_INT , 0 , MPI_COMM_WORLD);
+    int arr[size];
+    int arr0[size/2];
 
+    if(rank == 0){   
+        init(arr0 , arr , size);
+    }
+    
+    MPI_Bcast(&arr,size,MPI_INT,0,MPI_COMM_WORLD);
+    MPI_Bcast(&arr0 , size/2 , MPI_INT , 0, MPI_COMM_WORLD);
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    mid = size/2;                                   // where to split
+    inv = mid*2;                                    // inverse magic number
+    indexLength = size / 2;
+    levels = numLevels(size);
+
+    int indicesPerProcessor = indexLength / numtasks ;
+    t = clock();
+    for(int k = 0 ; k < levels ; k++){
        MPI_Barrier(MPI_COMM_WORLD);
         for(int i = rank*indicesPerProcessor; i < rank*indicesPerProcessor + indicesPerProcessor ; i++){
                 int ind = arr0[i];
@@ -60,7 +79,6 @@ int main(int argc, char *argv[])
         if(rank != 0){
             MPI_Send(&arr , size ,MPI_INT , 0 , tag1 , MPI_COMM_WORLD);    
         }
-        MPI_Barrier(MPI_COMM_WORLD);
         if(rank == 0){
             int temparr[size];
             for(int j = 1 ; j < numtasks ; j++){
@@ -72,27 +90,25 @@ int main(int argc, char *argv[])
                 }
             }   
         }
-        MPI_Barrier(MPI_COMM_WORLD);
+
         mid = mid/2;
         inv = mid*2;
         if(mid > 0 && rank == 0){
             indices(arr0 , mid , indexLength , inv);
         } 
-
-        MPI_Barrier(MPI_COMM_WORLD);
         MPI_Bcast(&arr,size,MPI_INT,0,MPI_COMM_WORLD);
         MPI_Bcast(&arr0 , size/2 , MPI_INT , 0, MPI_COMM_WORLD);
 
     }
-    double end = MPI_Wtime();
-    if(isSorted(arr , size) && rank == 1){
-        printf("The array is sorted and time taken is %f \n", end - start);
+    t = clock() - t;
+    
+    if(isSorted(arr , size) && rank == 0){
+        printf("\nThe array is sorted and time taken is %f \n\n", (double)t / CLOCKS_PER_SEC);
     }
  
     MPI_Finalize();
-
-    printArr(arr,size);
-    //printf("time taken is %f\n\n " , ((double)t)/CLOCKS_PER_SEC);
+    if(rank == 0)
+        printArr(arr,size);
 }
 
 bool isSorted(int *arr , int size){
@@ -111,6 +127,7 @@ int numLevels(int mid){
 }
 
 void init(int * arr0 , int *arr , int size){
+    
     for(int i = 0 ; i < size ; i++ ){
         if(i < size/2){
             arr0[i] = i;

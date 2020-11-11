@@ -7,15 +7,14 @@ def generate(n):
 	t = int(n/2)
 	print(n)
 	for i in range(0,t):
-		start = i*n;
+		start = i*n
 		end = (i+1)*n
 		rand = random.randint(start , end)
-		array[i] = rand
+		if(i>0 and array[i-1] == rand):
+			rand = rand +1
 		
-		s = (n-i-1)*n
-		e = (n - i)*n
-		r = random.randint(s,e)
-		array[t+i] = r
+		array[i] = rand
+		array[-i-1] = rand-1
 	return array
 	
 def printArr(array):
