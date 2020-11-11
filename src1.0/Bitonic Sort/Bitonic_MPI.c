@@ -20,6 +20,7 @@ void indices(int *array ,int mid , int length , int inv);
 void reset(int *arr , int size);
 void init(int * arr0 , int *arr , int size);
 int numLevels(int mid);
+bool isSorted(int *arr, int size);
 
 int main(int argc, char *argv[])
 {
@@ -43,6 +44,7 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD , &rank);
 
     int indicesPerProcessor = indexLength / numtasks ;
+    double start = MPI_Wtime();
     for(int k = 0 ; k < levels ; k++){
         
         MPI_Barrier(MPI_COMM_WORLD);
@@ -82,11 +84,22 @@ int main(int argc, char *argv[])
         MPI_Bcast(&arr0 , size/2 , MPI_INT , 0, MPI_COMM_WORLD);
 
     }
+    double end = MPI_Wtime();
+    if(isSorted(arr , size) && rank == 1){
+        printf("The array is sorted and time taken is %f \n", end - start);
+    }
  
     MPI_Finalize();
 
     printArr(arr,size);
     //printf("time taken is %f\n\n " , ((double)t)/CLOCKS_PER_SEC);
+}
+
+bool isSorted(int *arr , int size){
+    for(int i = 0; i < size-1 ; i++){
+        if(arr[i] > arr[i+1]) return false;
+    }
+    return true;
 }
 int numLevels(int mid){
     int m = mid;
