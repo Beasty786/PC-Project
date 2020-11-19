@@ -1,0 +1,32 @@
+say_hello:
+	@echo "Compiling files..."
+
+simulation: GOL_Simulation.c
+	@gcc GOL_Simulation.c -o sim
+
+parallel: GOL_Parallel.c
+	This part should be relatively short as bulk of the explanation has been done above. Starting with openMP:
+    • Store every variable as a global variable, this includes the lists we are keeping track of.
+    • In the above example, we’d have a maximum of 4 processors working on the problem, 4 being the size of the indices array.
+    • We use the for construct applied on the indices list, this means at every level, each processor will tackle an operation.
+    • If there are two processors, then the for construct, will divide the indices list into two and every processor will tackle two elements of the indices array each and this will be in parallel.
+    • If for any reason we’d use more processors than the size of the indices array, these will be idle and might be bad for performance.
+The openMP implementation is straight forward because we are using a shared memory approach, things get a little bit more interesting when it comes to MPI since it uses a distributed memory approach, and it works as follows:
+    • we initialize both lists… again.
+    • We then initialize MPI, which creates an instance of the program for every processor which inherits every initialized variable and lists and keeps it’s own copies.
+    • The main thread or processor is the only one that is responsible for updating the indices list, and before the next level, it broadcasts it to all other processors.
+    • For a small size bitonic list, the above might be computationally expensive but the as there list size gets larger, we might have good performance, but we are yet to find out.
+    • Every processor calculates it’s own chunk and calculates which chunk it should work on, this is achieved through the knowledge of other initialized variables as well as the knowledge of how many processors are there in total.
+    • Now that every processor has it’s own list, it works on it’s own chunk and send the entire partially updated list to the main thread.
+    • When the main thread receives all the partially updated lists, it uses these to create on fully updated list in for the next level, it then broadcasts this list to all other processors for the next level.
+    • And the above points describes how processors communicate, this might not be the most effiecient way, we could have used scatter for instance, but for the ease of programming, this approach was of best interest.
+Now that we have discusssed the implementation approach, we can now go on to discuss and compare performance of all these three implementations and see if we can conclude on which approach is better.
+	@gcc GOL_Parallel.c -o par
+
+sequential: GOL_sequential
+	@echo "compiling seqential ..."
+	@gcc GOL_sequential.c -o seq
+
+clean:
+	@echo "cleaning up..."
+	rm *.o
