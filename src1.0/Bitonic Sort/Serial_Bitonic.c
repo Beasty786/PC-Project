@@ -14,7 +14,7 @@ double BitonicSort(int *arr , int *indices , int mid , int inv , int size);
 void init(int * arr0 , int *arr , int size);
 
 int main(int argc, char const *argv[])
-{
+{   printf("You are now running the serial code for bitonic sort");
     printf("\nPLEASE ENTER THE SIZE OF THE ARRAY AND PRESS ENTER \nTHEN ENTER THE VALUES OF THE ARRAY YOU WISH TO SORT IN A BITONIC SEQUENCE\n\n");
 
     int size ;
